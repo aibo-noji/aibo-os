@@ -95,7 +95,7 @@ export default function Home() {
 
   return (
     <main style={{ padding: "40px" }}>
-      <h1>相棒OS</h1>
+      <h1>相棒OS  v3(人生初アプリ）</h1>
       <p>今日の日付：{today}</p>
 
       <p>朝食：</p>
