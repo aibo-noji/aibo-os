@@ -9,6 +9,7 @@ type Log = {
   dinner: string;
   score: number;
   training: boolean;
+  trainingNote: string;
   alcohol: boolean;
   junkMorning: boolean;
   junkLunch: boolean;
@@ -24,6 +25,8 @@ export default function Home() {
   const [score, setScore] = useState(50);
 
   const [training, setTraining] = useState(false);
+  const [trainingNote, setTrainingNote] = useState("");
+
   const [alcohol, setAlcohol] = useState(false);
   const [junkMorning, setJunkMorning] = useState(false);
   const [junkLunch, setJunkLunch] = useState(false);
@@ -48,6 +51,7 @@ export default function Home() {
       dinner,
       score,
       training,
+      trainingNote, 
       alcohol,
       junkMorning,
       junkLunch,
@@ -99,13 +103,25 @@ export default function Home() {
       <p>今日の日付：{today}</p>
 
       <p>朝食：</p>
-      <input value={morning} onChange={(e) => setMorning(e.target.value)} />
+      <input
+      value={morning}
+      onChange={(e) => setMorning(e.target.value)}
+      style={{ width: "100%" }}
+/>
 
       <p>昼食：</p>
-      <input value={lunch} onChange={(e) => setLunch(e.target.value)} />
+      <input
+      value={lunch}
+      onChange={(e) => setLunch(e.target.value)}
+      style={{ width: "100%" }}
+/>
 
       <p>夕食：</p>
-      <input value={dinner} onChange={(e) => setDinner(e.target.value)} />
+      <input
+      value={dinner}
+      onChange={(e) => setDinner(e.target.value)}
+      style={{ width: "100%" }}
+/>
 
 <p>自己評価：{score} 点</p>
 <input
@@ -126,6 +142,17 @@ export default function Home() {
             onChange={(e) => setTraining(e.target.checked)}
           />
           筋トレ
+{training && (
+  <div>
+    内容：
+    <input
+      value={trainingNote}
+      onChange={(e) => setTrainingNote(e.target.value)}
+      placeholder="例：腕立て20回×3"
+    />
+  </div>
+)}
+
         </label>
       </p>
 
@@ -221,7 +248,9 @@ export default function Home() {
         >
           <div>{log.date}</div>
           <div>{log.score}点</div>
-          <div>{log.training ? "💪" : "🧟‍♂️"}</div>
+          <div>
+            {log.training ? "💪" : "🧟‍♂️"} {log.trainingNote}
+          </div>
           <div>{log.alcohol ? "🍺" : "⭐"}</div>
           <div>{log.junkMorning ? "🍔" : "👍"}</div>
           <div>{log.junkLunch ? "🍜" : "👍"}</div>
