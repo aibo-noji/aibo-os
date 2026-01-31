@@ -90,16 +90,54 @@ export default function Home() {
     (log) => log.junkMorning || log.junkLunch || log.junkDinner
   );
   const junkAvg =
-    junkLogs.length === 0
-      ? 0
-      : Math.round(
-          junkLogs.reduce((sum, log) => sum + log.score, 0) /
-            junkLogs.length
-        );
+ junkLogs.length === 0
+    ? 0
+    : Math.round(
+        junkLogs.reduce((sum, log) => sum + log.score, 0) /
+          junkLogs.length
+      );
 
+// 連続記録日数
+const streak = (() => {
+  if (logs.length === 0) return 0;
+
+  const sorted = [...logs].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  let count = 0;
+  let current = new Date();
+
+  for (let log of sorted) {
+    const logDate = new Date(log.date);
+
+    if (logDate.toDateString() === current.toDateString()) {
+      count++;
+      current.setDate(current.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  return count;
+})();
+
+ // 継続称号
+    let badge = "🔰"; // 初期
+
+    if (streak >= 30) badge = "👑";
+    else if (streak >= 14) badge = "🥇";
+    else if (streak >= 7) badge = "🥈";
+    else if (streak >= 3) badge = "🥉";
   return (
     <main style={{ padding: "40px" }}>
       <h1>相棒OS  v3(人生初アプリ）</h1>
+      <p style={{ fontSize: "20px", fontWeight: "bold", marginTop: "8px" }}>
+
+      🔥 連続記録：{streak}日目 {badge}
+    </p>
+
+
       <p>今日の日付：{today}</p>
 
       <p>朝食：</p>
