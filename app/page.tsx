@@ -22,7 +22,6 @@ export default function Home() {
   const [morning, setMorning] = useState("");
   const [lunch, setLunch] = useState("");
   const [dinner, setDinner] = useState("");
-  const [score, setScore] = useState(50);
 
   const [training, setTraining] = useState(false);
   const [trainingNote, setTrainingNote] = useState("");
@@ -42,8 +41,37 @@ export default function Home() {
     }
   }, []);
 
+  // 自動スコア計算
+  const calculateScore = () => {
+    let total = 0;
+
+    // 食事
+    if (!junkMorning) total += 30;
+    if (!junkLunch) total += 30;
+    if (!junkDinner) total += 30;
+
+    // トレーニング
+    if (training) total += 40;
+
+    // 酒
+    if (alcohol) total -= 30;
+
+    // ジャンク減点
+    if (junkMorning) total -= 30;
+    if (junkLunch) total -= 30;
+    if (junkDinner) total -= 30;
+
+    // 上限・下限
+    if (total > 100) total = 100;
+    if (total < 0) total = 0;
+
+    return total;
+  };
+
   // 保存
   const handleSave = () => {
+    const score = calculateScore();
+
     const newLog: Log = {
       date: today,
       morning,
@@ -51,7 +79,7 @@ export default function Home() {
       dinner,
       score,
       training,
-      trainingNote, 
+      trainingNote,
       alcohol,
       junkMorning,
       junkLunch,
@@ -90,146 +118,102 @@ export default function Home() {
     (log) => log.junkMorning || log.junkLunch || log.junkDinner
   );
   const junkAvg =
- junkLogs.length === 0
-    ? 0
-    : Math.round(
-        junkLogs.reduce((sum, log) => sum + log.score, 0) /
-          junkLogs.length
-      );
+    junkLogs.length === 0
+      ? 0
+      : Math.round(
+          junkLogs.reduce((sum, log) => sum + log.score, 0) /
+            junkLogs.length
+        );
 
-// 連続記録日数
-const streak = (() => {
-  if (logs.length === 0) return 0;
+  // 連続記録日数
+  const streak = (() => {
+    if (logs.length === 0) return 0;
 
-  const sorted = [...logs].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+    const sorted = [...logs].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
 
-  let count = 0;
-  let current = new Date();
+    let count = 0;
+    let current = new Date();
 
-  for (let log of sorted) {
-    const logDate = new Date(log.date);
+    for (let log of sorted) {
+      const logDate = new Date(log.date);
 
-    if (logDate.toDateString() === current.toDateString()) {
-      count++;
-      current.setDate(current.getDate() - 1);
-    } else {
-      break;
+      if (logDate.toDateString() === current.toDateString()) {
+        count++;
+        current.setDate(current.getDate() - 1);
+      } else {
+        break;
+      }
     }
-  }
 
-  return count;
-})();
+    return count;
+  })();
 
- // 継続称号
-    let badge = "🔰"; // 初期
+  // 継続称号
+  let badge = "🔰";
+  if (streak >= 30) badge = "👑";
+  else if (streak >= 14) badge = "🥇";
+  else if (streak >= 7) badge = "🥈";
+  else if (streak >= 3) badge = "🥉";
 
-    if (streak >= 30) badge = "👑";
-    else if (streak >= 14) badge = "🥇";
-    else if (streak >= 7) badge = "🥈";
-    else if (streak >= 3) badge = "🥉";
   return (
     <main style={{ padding: "40px" }}>
-      <h1>相棒OS  v3(人生初アプリ）</h1>
-      <p style={{ fontSize: "20px", fontWeight: "bold", marginTop: "8px" }}>
+      <h1>相棒OS v4（自動採点）</h1>
 
-      🔥 連続記録：{streak}日目 {badge}
-    </p>
-
+      <p style={{ fontSize: "20px", fontWeight: "bold" }}>
+        🔥 連続記録：{streak}日目 {badge}
+      </p>
 
       <p>今日の日付：{today}</p>
 
+      <p style={{ fontSize: "18px", fontWeight: "bold" }}>
+        🎯 今日のスコア：{calculateScore()} 点
+      </p>
+
       <p>朝食：</p>
-      <input
-      value={morning}
-      onChange={(e) => setMorning(e.target.value)}
-      style={{ width: "100%" }}
-/>
+      <input value={morning} onChange={(e) => setMorning(e.target.value)} style={{ width: "100%" }} />
 
       <p>昼食：</p>
-      <input
-      value={lunch}
-      onChange={(e) => setLunch(e.target.value)}
-      style={{ width: "100%" }}
-/>
+      <input value={lunch} onChange={(e) => setLunch(e.target.value)} style={{ width: "100%" }} />
 
       <p>夕食：</p>
-      <input
-      value={dinner}
-      onChange={(e) => setDinner(e.target.value)}
-      style={{ width: "100%" }}
-/>
-
-<p>自己評価：{score} 点</p>
-<input
-  type="range"
-  min="0"
-  max="100"
-  value={score}
-  onChange={(e) => setScore(Number(e.target.value))}
-  style={{ width: "100%" }}
-/>
-
+      <input value={dinner} onChange={(e) => setDinner(e.target.value)} style={{ width: "100%" }} />
 
       <p>
         <label>
-          <input
-            type="checkbox"
-            checked={training}
-            onChange={(e) => setTraining(e.target.checked)}
-          />
+          <input type="checkbox" checked={training} onChange={(e) => setTraining(e.target.checked)} />
           筋トレ
-{training && (
-  <div>
-    内容：
-    <input
-      value={trainingNote}
-      onChange={(e) => setTrainingNote(e.target.value)}
-      placeholder="例：腕立て20回×3"
-    />
-  </div>
-)}
-
         </label>
       </p>
 
+      {training && (
+        <input
+          value={trainingNote}
+          onChange={(e) => setTrainingNote(e.target.value)}
+          placeholder="例：腕立て20回×3"
+          style={{ width: "100%" }}
+        />
+      )}
+
       <p>
         <label>
-          <input
-            type="checkbox"
-            checked={alcohol}
-            onChange={(e) => setAlcohol(e.target.checked)}
-          />
+          <input type="checkbox" checked={alcohol} onChange={(e) => setAlcohol(e.target.checked)} />
           酒（夜）
         </label>
       </p>
 
       <p>ジャンク：</p>
       <label>
-        <input
-          type="checkbox"
-          checked={junkMorning}
-          onChange={(e) => setJunkMorning(e.target.checked)}
-        />
+        <input type="checkbox" checked={junkMorning} onChange={(e) => setJunkMorning(e.target.checked)} />
         朝
       </label>
-
       <label>
-        <input
-          type="checkbox"
-          checked={junkLunch}
-          onChange={(e) => setJunkLunch(e.target.checked)}
-        />
+        <input type="checkbox" checked={junkLunch} onChange={(e) => setJunkLunch(e.target.checked)} />
         昼
       </label>
-
       <label>
-        <input
-          type="checkbox"
-          checked={junkDinner}
-          onChange={(e) => setJunkDinner(e.target.checked)}
-        />
+        <input type="checkbox" checked={junkDinner} onChange={(e) => setJunkDinner(e.target.checked)} />
         夜
       </label>
 
@@ -238,61 +222,25 @@ const streak = (() => {
 
       <hr />
 
-      {/* 平均エリア */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "200px 80px",
-          rowGap: "4px",
-          marginBottom: "16px",
-        }}
-      >
-        <div>平均点（直近7日）</div>
-        <div>{average} 点</div>
-
-        <div>酒あり日の平均</div>
-        <div>{alcoholAvg} 点</div>
-
-        <div>ジャンクあり日の平均</div>
-        <div>{junkAvg} 点</div>
+      <div>
+        <div>平均点：{average} 点</div>
+        <div>酒あり平均：{alcoholAvg} 点</div>
+        <div>ジャンクあり平均：{junkAvg} 点</div>
       </div>
 
       <h2>1週間ログ</h2>
 
-      <div
-        style={{
-          fontWeight: "bold",
-          display: "grid",
-          gridTemplateColumns: "120px 60px 60px 40px 40px 40px 40px",
-        }}
-      >
-        <div>日付</div>
-        <div>点数</div>
-        <div>筋</div>
-        <div>酒</div>
-        <div>朝</div>
-        <div>昼</div>
-        <div>夜</div>
-      </div>
-
       {last7Logs.map((log, index) => (
-        <div
-          key={index}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "120px 60px 60px 40px 40px 40px 40px",
-            alignItems: "center",
-          }}
-        >
-          <div>{log.date}</div>
-          <div>{log.score}点</div>
-          <div>
-            {log.training ? "💪" : "🧟‍♂️"} {log.trainingNote}
-          </div>
-          <div>{log.alcohol ? "🍺" : "⭐"}</div>
-          <div>{log.junkMorning ? "🍔" : "👍"}</div>
-          <div>{log.junkLunch ? "🍜" : "👍"}</div>
-          <div>{log.junkDinner ? "🍗" : "👍"}</div>
+        <div key={index}>
+          {log.date}｜
+          <span style={{ display: "inline-block", width: "50px", textAlign: "right" }}>
+            {log.score}点
+          </span>
+          ｜{log.training ? "💪" : "🧟‍♂️"} {log.trainingNote}｜
+          {log.alcohol ? "🍺" : "⭐"}｜
+          {log.junkMorning ? "🍔" : "👍"}｜
+          {log.junkLunch ? "🍜" : "👍"}｜
+          {log.junkDinner ? "🍗" : "👍"}
         </div>
       ))}
     </main>
